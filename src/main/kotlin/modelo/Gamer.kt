@@ -3,7 +3,7 @@ package modelo
 import java.util.Scanner
 import kotlin.random.Random
 
-data class Gamer(var nome:String, var email:String){
+data class Gamer(var nome:String, var email:String): Recomendavel{
     var dataNascimento: String? = null
     var usuario: String? = null
         set(value) {
@@ -18,7 +18,14 @@ data class Gamer(var nome:String, var email:String){
     var plano: Plano = Plano ("Bronze")
     val  jogosBuscados = mutableListOf<Jogo?>()
     val jogosAlugados = mutableListOf<Aluguel>()
+    private val listaNotas = mutableListOf<Int>()
 
+    override val media: Double
+        get() = listaNotas.average()
+
+    override fun recomendar(nota: Int) {
+        listaNotas.add(nota)
+    }
 
     constructor (nome: String, email: String, dataNascimento: String, usuario: String) :
             this(nome, email){
