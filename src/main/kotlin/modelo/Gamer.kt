@@ -3,22 +3,23 @@ package modelo
 import java.util.Scanner
 import kotlin.random.Random
 
-data class Gamer(var nome:String, var email:String): Recomendavel{
-    var dataNascimento: String? = null
-    var usuario: String? = null
+data class Gamer(var nome:String, var email:String): Recomendavel {
+    var dataNascimento:String? = null
+    var usuario:String? = null
         set(value) {
             field = value
-            if (idInterno.isNullOrBlank()){
+            if(idInterno.isNullOrBlank()) {
                 criarIdInterno()
             }
         }
-
-    var idInterno: String? = null
+    var id = 0
+    var idInterno:String? = null
         private set
-    var plano: Plano = Plano ("Bronze")
-    val  jogosBuscados = mutableListOf<Jogo?>()
+    var plano: Plano = PlanoAvulso("BRONZE")
+    val jogosBuscados = mutableListOf<Jogo?>()
     val jogosAlugados = mutableListOf<Aluguel>()
     private val listaNotas = mutableListOf<Int>()
+    val jogosRecomendados = mutableListOf<Jogo>()
 
     override val media: Double
         get() = listaNotas.average()
@@ -27,50 +28,65 @@ data class Gamer(var nome:String, var email:String): Recomendavel{
         listaNotas.add(nota)
     }
 
-    constructor (nome: String, email: String, dataNascimento: String, usuario: String) :
-            this(nome, email){
-            this.dataNascimento = dataNascimento
-            this.usuario = usuario
-            criarIdInterno()
-        }
+    fun recomendarJogo(jogo: Jogo, nota: Int) {
+        jogo.recomendar(nota)
+        jogosRecomendados.add(jogo)
+    }
+
+    constructor(nome: String, email: String, dataNascimento:String?, usuario:String?, id: Int = 0):
+            this(nome, email) {
+        this.dataNascimento = dataNascimento
+        this.usuario = usuario
+        this.id = id
+        criarIdInterno()
+    }
+
     init {
-        if (nome.isNullOrBlank()){
-            throw IllegalArgumentException("Nome em branco")
+        if (nome.isNullOrBlank()) {
+            throw IllegalArgumentException("Nome está em branco")
         }
         this.email = validarEmail()
     }
 
     override fun toString(): String {
-        return "Gamer(nome='$nome', email:'$email', dataNascimento:'$dataNascimento')"
+        return "Gamer:\n" +
+                "Nome: $nome\n" +
+                "Email: $email\n" +
+                "Data Nascimento: $dataNascimento\n" +
+                "Usuario: $usuario\n" +
+                "IdInterno: $idInterno\n" +
+                "Reputação: $media\n" +
+                "Id: $id\n" +
+                "Plano: ${plano.tipo}"
     }
 
-    fun criarIdInterno(){
-        val numero = Random.nextInt(until = 10000)
+    fun criarIdInterno() {
+        val numero = Random.nextInt(10000)
         val tag = String.format("%04d", numero)
 
         idInterno = "$usuario#$tag"
     }
 
-    fun validarEmail(): String{
-        val regex = Regex(pattern = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")
-        if(regex.matches(email)){
-        return email
-        } else{
-            throw IllegalArgumentException("Email Invalido")
+    fun validarEmail(): String {
+        val regex = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")
+        if (regex.matches(email)) {
+            return email
+        } else {
+            throw IllegalArgumentException("Email inválido")
         }
     }
 
-    fun jogosDoMes(mes:Int): List<Jogo> {
-        return jogosAlugados
-            .filter { aluguel -> aluguel.periodo.dataInicial.monthValue == mes}
-            .map { aluguel -> aluguel.jogo }
-    }
-
-    fun alugaJogo(jogo: Jogo, periodo: Periodo): Aluguel{
+    fun alugaJogo(jogo: Jogo, periodo: Periodo): Aluguel {
         val aluguel = Aluguel(this, jogo, periodo)
         jogosAlugados.add(aluguel)
 
         return aluguel
+    }
+
+    fun jogosDoMes(mes:Int): List<Jogo> {
+        return jogosAlugados
+            .filter { aluguel ->  aluguel.periodo.dataInicial.monthValue == mes}
+            .map { aluguel ->  aluguel.jogo}
     }
 
     companion object {
@@ -90,8 +106,10 @@ data class Gamer(var nome:String, var email:String): Recomendavel{
 
                 return Gamer(nome, email, nascimento, usuario)
             } else {
-                return  Gamer(nome, email)
+                return Gamer (nome, email)
             }
+
         }
     }
+
 }

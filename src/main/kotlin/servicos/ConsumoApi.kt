@@ -12,38 +12,37 @@ import java.net.http.HttpResponse.BodyHandlers
 
 class ConsumoApi {
 
-     private fun consomeDados(endereco: String): String {
+    private fun consomeDados(endereco: String): String {
         val client: HttpClient = HttpClient.newHttpClient()
         val request = HttpRequest.newBuilder()
             .uri(URI.create(endereco))
             .build()
         val response = client
-            .send(request, BodyHandlers.ofString())
+            .send(request, HttpResponse.BodyHandlers.ofString())
 
         return response.body()
     }
 
     fun buscaJogo(id:String): InfoJogo {
         val endereco = "https://www.cheapshark.com/api/1.0/games?id=$id"
-
         val json = consomeDados(endereco)
 
         val gson = Gson()
         val meuInfoJogo = gson.fromJson(json, InfoJogo::class.java)
 
         return meuInfoJogo
+
     }
 
     fun buscaGamers(): List<Gamer> {
         val endereco = "https://raw.githubusercontent.com/jeniblodev/arquivosJson/main/gamers.json"
-
         val json = consomeDados(endereco)
 
         val gson = Gson()
         val meuGamerTipo = object : TypeToken<List<InfoGamerJson>>() {}.type
-        val listaGamer : List<InfoGamerJson>  = gson.fromJson(json, meuGamerTipo)
+        val listaGamer:List<InfoGamerJson> = gson.fromJson(json, meuGamerTipo)
 
-       val listaGamerConvertida = listaGamer.map { infoGamerJson ->  infoGamerJson.criaGamer()}
+        val listaGamerConvertida = listaGamer.map { infoGamerJson -> infoGamerJson.criaGamer() }
 
         return listaGamerConvertida
     }
